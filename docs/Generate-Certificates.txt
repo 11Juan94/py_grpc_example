@@ -1,0 +1,24 @@
+Archivos resultantes
+ca.key -> Certificate Authority private key (can't be shared)
+ca.crt -> Certificate Authority trust certificate (can be shared) -> client use this
+server.key -> Server private key (can't be shared)
+server.csr -> Server certificate signing request (can be shared with the CA owner)
+server.crt -> Server certificate signed by the CA -> server use this
+server.pem -> Conversion of server.key into pem (can't be shared) -> server use this
+
+
+1->Generate Certificate Authority (ca.crt)
+openssl genrsa -passout pass:SecretPasswordOneHere -des3 -out ca.key 4096
+openssl req -passin pass:SecretPasswordOneHere -new -x509 -days 3650 -key ca.key -out ca.crt -subj "/CN=localhost"
+
+2->Generate server private key (server.key)
+openssl genrsa -passout pass:SecretPasswordTwoHere -des3 -out server.key 4096
+
+3->Get signed certificate from CA (server.csr)
+openssl req -passin pass:SecretPasswordTwoHere -new -key server.key -out server.csr -subj "/CN=localhost"
+
+4->Sign the certificate with the CA (server.crt)
+openssl x509 -req -passin pass:SecretPasswordOneHere -days 730 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
+
+5->Convert the server key to .pem (server.pem)
+openssl pkcs8 -topk8 -nocrypt -passin pass:SecretPasswordTwoHere -in server.key -out server.pem

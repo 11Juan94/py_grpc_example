@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: grpc-example
+  name: grpc-example
+spec:
+  type: ClusterIP
+  ports:
+  - name: grpc-greet
+    port: 50051
+    protocol: TCP
+    targetPort: grpc-api
+  selector:
+    service: grpc-example
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: grpc-example
+  template:
+    metadata:
+      labels:
+        service: grpc-example
+    spec:
+      containers:
+      - name: grpc-example
+        image: 11juan94/py_grpc_example:insecure
+        imagePullPolicy: Always
+        ports:
+        - name: grpc-api
+          containerPort: 50051
+          protocol: TCP
+      restartPolicy: Always
